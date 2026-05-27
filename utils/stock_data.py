@@ -1,29 +1,70 @@
-import yfinance as yf
+import requests
+import pandas as pd
+import streamlit as st
+import os
 
+@st.cache_data(ttl=3600)
 def get_stock_data(stock_id):
 
-    ticker = stock_id + ".TW"
+    try:
 
-    stock = yf.Ticker(ticker)
+        token = os.getenv(
+            "FINMIND_TOKEN"
+        )
 
-    data = stock.history(period="3mo")
+        url = (
+            "https://api.finmindtrade.com/api/v4/data"
+        )
 
-    # yfinance 偶爾會在最新一筆出現 OHLC 全為 NaN（但 Volume 仍有值），
-    # 這會導致現價/均線取最後一筆時變成 NaN。
-    if not data.empty:
-        ohlc_cols = ["Open", "High", "Low", "Close"]
-        existing_ohlc = [c for c in ohlc_cols if c in data.columns]
-        if existing_ohlc:
-            data = data.dropna(subset=existing_ohlc, how="any")
+        params = {
+            "dataset": "TaiwanStockPrice",
+            "data_id": stock_id,
+            "start_date": "2026-01-01",
+            "token": token
+        }
 
-    # 股票資訊
-    info = stock.info
+        response = requests.get(
+            url,
+            params=params
+        )
 
-    # 中文名稱
-    stock_name = (
-        info.get("shortName")
-        or info.get("longName")
-        or "未知股票"
-    )
+        data = response.json()
 
-    return data
+        if "data" not in data:
+
+            return None
+
+        df = pd.DataFrame(data["data"])
+
+        if df.empty:
+
+            return None
+
+        # 日期轉換
+        df["date"] = pd.to_datetime(
+            df["date"]
+        )
+
+        df.set_index(
+            "date",
+            inplace=True
+        )
+
+        # 改成 yfinance 格式
+        df.rename(columns={
+
+            "open": "Open",
+            "max": "High",
+            "min": "Low",
+            "close": "Close",
+            "Trading_Volume": "Volume"
+
+        }, inplace=True)
+
+        return df
+
+    except Exception as e:
+
+        print(e)
+
+        return None
