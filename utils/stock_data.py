@@ -8,7 +8,7 @@ def get_stock_data(stock_id):
 
     try:
 
-        token = os.getenv(
+        token = st.secrets(
             "FINMIND_TOKEN"
         )
 

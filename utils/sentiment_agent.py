@@ -1,11 +1,12 @@
 from openai import OpenAI
+import streamlit as st
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
 client = OpenAI(
-    api_key=os.getenv("OPENAI_API_KEY")
+    api_key=st.secrets("OPENAI_API_KEY")
 )
 
 def analyze_sentiment(stock_id, news):
