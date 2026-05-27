@@ -6,7 +6,7 @@ import streamlit as st
 load_dotenv()
 
 client = OpenAI(
-    api_key=st.secrets("OPENAI_API_KEY")
+    api_key=st.secrets["OPENAI_API_KEY"]
 )
 
 def analyze_technical(current_price, rsi, ma20):

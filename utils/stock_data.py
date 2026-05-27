@@ -8,9 +8,9 @@ def get_stock_data(stock_id):
 
     try:
 
-        token = st.secrets(
+        token = st.secrets[
             "FINMIND_TOKEN"
-        )
+        ]
 
         url = (
             "https://api.finmindtrade.com/api/v4/data"
